@@ -1,10 +1,9 @@
 	program program_name
 	implicit none
 	external :: pgclos, pgimag ! PGPLOT imports
-	
-
-
-		
+	external :: rvs_normal ! stdlib_stats_distribution_normal imports
+	external :: random_seed ! stdlib_random imports 
+		integer :: seed_put, seed_get
 		integer, parameter :: N     = 200
 		real :: matrix(N, N)
 		real :: fmin, fmax
@@ -13,22 +12,23 @@
 		real    :: vm(6)
 		integer :: rc
 		
-
+		
+		
+		call pgplot_init('/XWINDOW', N, N, vm, rc)
+		if (rc < 0) stop 'Error: Failed to open output device'
 		do k = 1, N
 			do r = 1, N
 				call RANDOM_NUMBER(i)
 				Print "(f6.3)", i
 				matrix(r, k) = i*100
-
-			end do
-			
+			end do	
 		end do
-		
-		call pgplot_init('/XWINDOW', N, N, vm, rc)
-		if (rc < 0) stop 'Error: Failed to open output device'
+
 		fmin = minval(matrix)
     	fmax = maxval(matrix)
+		
 		call pgimag(matrix, N, N, 1, N, 1, N, fmin, fmax, vm)
+
 
 		call pgclos()
 
