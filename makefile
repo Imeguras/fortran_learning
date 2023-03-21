@@ -1,7 +1,7 @@
 #
 CMPILER=gfortran
 
-LIBS=-lpgplot -lX11
+LIBS=-lpgplot -lX11 -L/usr/lib -lfortran_stdlib -I/usr/include/fortran_stdlib/GNU-12.2.1/
 
 CFLAGS=-Wall 
 
@@ -26,7 +26,7 @@ $(PROGRAM): $(PROGRAM_OBJS)
 main.o: main.f
 
 %.o : %.f
-	$(CMPILER) $(CFLAGS) -c $< -o obj/$@
+	$(CMPILER) $(CFLAGS) -c $< -o obj/$@ $(LIBS)
 
 
 clean:

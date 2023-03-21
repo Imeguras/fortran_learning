@@ -1,14 +1,14 @@
 	program program_name
+	use stdlib_random, only: random_seed
+	use stdlib_stats_distribution_normal, only: norm => rvs_normal
+
+
 	implicit none
 	external :: pgclos, pgimag ! PGPLOT imports
-	external :: rvs_normal ! stdlib_stats_distribution_normal imports
-	external :: random_seed ! stdlib_random imports 
+	
+
 		integer :: seed_put, seed_get
 		integer, parameter :: N     = 200
-		real :: matrix(N, N)
-		real :: fmin, fmax
-		integer:: k, r
-		real :: i
 		real    :: vm(6)
 		integer :: rc
 		
@@ -16,23 +16,62 @@
 		
 		call pgplot_init('/XWINDOW', N, N, vm, rc)
 		if (rc < 0) stop 'Error: Failed to open output device'
-		do k = 1, N
-			do r = 1, N
-				call RANDOM_NUMBER(i)
-				Print "(f6.3)", i
-				matrix(r, k) = i*100
-			end do	
-		end do
-
-		fmin = minval(matrix)
-    	fmax = maxval(matrix)
-		
-		call pgimag(matrix, N, N, 1, N, 1, N, fmin, fmax, vm)
-
-
-		call pgclos()
+		call pgpage
+		call random_plot(N, N, vm, rc)
+		call pgpage
+		call normal_plot(N, N, vm, rc)
+		call pgend
+		call pgclos
 
 	contains
+		subroutine normal_plot(n, m, vm, stat)
+
+			integer,          intent(in)            :: n
+			integer,          intent(in)            :: m
+			
+			real,             intent(in)           :: vm(6)
+			integer,          intent(out), optional :: stat
+			integer 								:: k, r
+			real 									:: i
+			real        							:: matrix(n, m)
+			real 									:: fmin, fmax
+
+			do k = 1, n
+				do r = 1, m
+					!! norm(mean, standard_deviation)
+					matrix(r, k) = norm(0.0, 1.0)
+				end do
+			end do
+
+			fmin = minval(matrix)
+			fmax = maxval(matrix)
+			call pgimag(matrix, n, m, 1, n, 1, m, fmin, fmax, vm)
+
+		end subroutine normal_plot
+		subroutine random_plot(n, m, vm, stat)
+		
+			integer,          intent(in)            :: n
+			integer,          intent(in)            :: m
+			
+			real,             intent(in)           :: vm(6)
+			integer,          intent(out), optional :: stat
+			integer 								:: k, r
+			real 									:: i
+			real        							:: matrix(n, m)
+			real 									:: fmin, fmax
+
+			do k = 1, n
+				do r = 1, m
+					call RANDOM_NUMBER(i)
+					matrix(r, k) = i*100
+				end do	
+			end do
+
+			fmin = minval(matrix)
+			fmax = maxval(matrix)
+			call pgimag(matrix, n, m, 1, n, 1, m, fmin, fmax, vm)
+		end subroutine random_plot
+
 		subroutine pgplot_init(gd, n, m, vm, stat)
 		!! print a real number
 
@@ -62,7 +101,7 @@
 			
 			! Set up window and viewport.
 			call pgwnad(0.0, 1.0 + n, 0.0, 1.0 + m)
-
+			call pgask(.true.)
 			! Add border and output text.
 			call pgbox('bcts', 0.0, 0, 'bcts', 0.0, 0)
 			call pgmtxt('t', 1.0, 0.0, 0.0, 'pgplot')
